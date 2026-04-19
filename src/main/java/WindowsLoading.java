@@ -82,16 +82,22 @@ public class WindowsLoading extends PApplet {
         ellipse(x - ballBaseR * 0.3f, y - ballBaseR * 0.3f, ballBaseR * 0.8f, ballBaseR * 0.8f);
     }
 
-    // İvmelenme fonksiyonu: Yukarıda hızlanan, aşağıda yavaşlayan akış
+    // İvmelenme fonksiyonu: Sabit hız -> Yerçekimi -> Hızlı düşüş
     float getEasedProgress(float p) {
-        // Tam sayı kısmını (tur sayısı) ayır, ondalık kısımda (tur içi) ivme uygula
-        float lapCount = floor(p);
-        float lapP = p % 1.0f;
-        
-        // p^1.5 ivmelenmesi: Başta yavaş (alt), tepeden sonra hızlanma sağlar
-        float easedLapP = pow(lapP, 1.4f);
-        
-        return lapCount + easedLapP;
+        if (p < 0.6f) {
+            // 1. Aşama: Sabit hızla yükselme (Saat 6'dan 2'ye kadar)
+            return p;
+        } else if (p < 1.5f) {
+            // 2. Aşama: Yerçekimi etkisi (Hızlanma ve üst noktaya çıkış)
+            // Saat 2'den itibaren ivmelenir, alttan geçerken hızlanır, üste çıkarken yavaşlar
+            float localP = (p - 0.6f) / 0.9f;
+            float ease = (float)(1.0 - Math.cos(localP * PI)) / 2.0f;
+            return 0.6f + ease * 0.9f;
+        } else {
+            // 3. Aşama: İkinci turun sonu - Hızla düşüş ve kayboluş
+            float localP = p - 1.5f;
+            return 1.5f + localP * 2.5f; // Normalden 2.5 kat daha hızlı düşüş
+        }
     }
 
     void drawLabel() {
