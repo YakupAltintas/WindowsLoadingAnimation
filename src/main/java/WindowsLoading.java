@@ -3,15 +3,15 @@ import processing.core.*;
 public class WindowsLoading extends PApplet {
 
     final int   NUM_BALLS    = 6;
-    final float BALL_DELAY   = 180f;   // Bilyeler arası gecikme (ms)
-    final float LAP_DURATION = 1400f;  // Bir tam tur süresi (ms)
-    final float PAUSE_AFTER  = 1000f;  // Döngü sonu bekleme (ms)
+    final float BALL_DELAY   = 110f;   // Bilyeler arası gecikme (ms)
+    final float LAP_DURATION = 1800f;  // Bir tam tur süresi (ms)
+    final float PAUSE_AFTER  = 1200f;  // Döngü sonu bekleme (ms)
     
     // Toplam döngü süresi = (Son bilyenin başlama zamanı) + (2 tur süresi) + (Bekleme)
     final float TOTAL_CYCLE = (NUM_BALLS - 1) * BALL_DELAY + 2 * LAP_DURATION + PAUSE_AFTER;
 
     float orbitR    = 80f;
-    float ballBaseR = 7f;
+    float ballBaseR = 4.5f;
 
     @Override
     public void settings() {
@@ -82,18 +82,23 @@ public class WindowsLoading extends PApplet {
         ellipse(x - ballBaseR * 0.3f, y - ballBaseR * 0.3f, ballBaseR * 0.8f, ballBaseR * 0.8f);
     }
 
-    // İvmelenme fonksiyonu: Saat 2'de düşüş başlasın ve tam 2 turda bitsin
+    // İvmelenme fonksiyonu: Saat 2'de hızlan, Saat 12'de yavaşla (Her iki tur)
     float getEasedProgress(float p) {
-        // 6 o'clock (0.0) -> 12 o'clock (0.5) -> 2 o'clock (~0.66)
+        float vSlow = 0.6f;
+        float vFast = 1.278f;
+
         if (p < 0.66f) {
-            // Saat 2'ye kadar sabit hızla yükselme
-            return p;
+            // 1. Tur: Saat 6 -> Saat 2 (Yavaş)
+            return p * vSlow;
+        } else if (p < 1.5f) {
+            // 1. Tur: Saat 2 -> 2. Tur: Saat 12 (Hızlı)
+            return 0.66f * vSlow + (p - 0.66f) * vFast;
+        } else if (p < 1.66f) {
+            // 2. Tur: Saat 12 -> Saat 2 (Yavaş)
+            return 0.66f * vSlow + 0.84f * vFast + (p - 1.5f) * vSlow;
         } else {
-            // Saat 2'den itibaren ivmelenerek düşüş
-            // 2.0 progress değerinde tam olarak 2.0 döndürmeli (3. turu engellemek için)
-            float localP = (p - 0.66f) / (2.0f - 0.66f);
-            // pow < 1.0 başlangıçta (saat 2'de) ani hızlanma/düşüş hissi verir
-            return 0.66f + pow(localP, 0.75f) * (2.0f - 0.66f);
+            // 2. Tur: Saat 2 -> Saat 6 (Hızlı)
+            return 0.82f * vSlow + 0.84f * vFast + (p - 1.66f) * vFast;
         }
     }
 
